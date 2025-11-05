@@ -34,7 +34,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",  # Must be first
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -72,7 +72,6 @@ if DATABASE_URL:
         "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
 else:
-    # Local fallback (for development)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -159,24 +158,3 @@ CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
-```
-
-## Key changes made:
-
-1. ✅ **Fixed middleware order** - WhiteNoise is now properly positioned
-2. ✅ **Added CORS headers configuration** for JWT tokens
-3. ✅ **Added CSRF_TRUSTED_ORIGINS** for both frontend and backend domains
-4. ✅ **Added secure cookie settings** for cross-origin authentication
-5. ✅ **Made CORS origins configurable** via environment variables
-6. ✅ **Security settings** adapt based on DEBUG mode
-
-## Environment Variables for Render:
-
-Add these in your Render dashboard under **Environment**:
-```
-SECRET_KEY=your-secret-key-here
-DEBUG=False
-ALLOWED_HOSTS=celestial-shopping.onrender.com
-CORS_ALLOWED_ORIGINS=https://celestial-shopping.vercel.app
-CSRF_TRUSTED_ORIGINS=https://celestial-shopping.vercel.app,https://celestial-shopping.onrender.com
-DATABASE_URL=(automatically set by Render if using their PostgreSQL)
