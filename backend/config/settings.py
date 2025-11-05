@@ -14,7 +14,13 @@ SECRET_KEY = 'django-insecure-your-secret-key-change-in-production'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'render', 'vercel', '127.0.0.1']
+from decouple import config, Csv
+
+SECRET_KEY = config("SECRET_KEY")
+DEBUG = config("DEBUG", default=False, cast=bool)
+
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
+
 
 # Application definition
 INSTALLED_APPS = [
@@ -127,10 +133,9 @@ SIMPLE_JWT = {
 
 # CORS Settings (for Next.js frontend)
 CORS_ALLOWED_ORIGINS = [
+    "https://celestial-shopping.vercel.app",
     "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "render.com",
-    "vercel.app",
 ]
+
 
 CORS_ALLOW_CREDENTIALS = True
