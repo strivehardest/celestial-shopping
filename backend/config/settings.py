@@ -4,26 +4,19 @@ Django settings for Celestial Shopping backend
 
 from pathlib import Path
 from datetime import timedelta
-from decouple import config, Csv
-import os
+from decouple import config
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ----------------------------------
-# SECURITY / ENVIRONMENT VARIABLES
-# ----------------------------------
-SECRET_KEY = config("SECRET_KEY")   # Set in Render
+# SECURITY
+SECRET_KEY = config("SECRET_KEY", default="CHANGE_ME_IN_PRODUCTION")
+
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = config(
-    "ALLOWED_HOSTS",
-    default="localhost,127.0.0.1",
-    cast=Csv()
-)
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*", cast=lambda v: v.split(","))
 
-# ----------------------------------
-# APPLICATIONS
-# ----------------------------------
+# APPS
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -32,23 +25,20 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # Third party apps
+    # Third Party
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
     "django_filters",
 
-    # Local apps
+    # Local
     "users",
     "store",
     "orders",
 ]
 
-# ----------------------------------
-# MIDDLEWARE
-# ----------------------------------
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",  # Must be FIRST
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -60,9 +50,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "config.urls"
 
-# ----------------------------------
-# TEMPLATES
-# ----------------------------------
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -81,19 +68,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# ----------------------------------
-# DATABASE (SQLite for now — we can upgrade to PostgreSQL next)
-# ----------------------------------
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+# DATABASE CONFIGURATION
 
-# ----------------------------------
-# PASSWORDS
-# ----------------------------------
+DATABASE_URL = config("DATABASE_URL", default=None)
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+    }
+else:
+    # Local fallback (for development)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+
+# AUTH
+AUTH_USER_MODEL = "users.CustomUser"
+
+# PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -101,17 +96,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# ----------------------------------
 # INTERNATIONALIZATION
-# ----------------------------------
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# ----------------------------------
-# STATIC / MEDIA (Render needs static root)
-# ----------------------------------
+# STATIC & MEDIA
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
@@ -120,14 +111,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ----------------------------------
-# CUSTOM USER MODEL
-# ----------------------------------
-AUTH_USER_MODEL = "users.CustomUser"
-
-# ----------------------------------
-# REST FRAMEWORK & JWT
-# ----------------------------------
+# REST FRAMEWORK
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -139,20 +123,17 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 12,
 }
 
+# JWT
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-# ----------------------------------
-# CORS (Allow your Next.js frontend)
-# ----------------------------------
-CORS_ALLOW_CREDENTIALS = True
-
+# CORS (Frontend domains allowed)
 CORS_ALLOWED_ORIGINS = [
     "https://celestial-shopping.vercel.app",
     "http://localhost:3000",
 ]
+
+CORS_ALLOW_CREDENTIALS = True
