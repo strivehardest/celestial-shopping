@@ -1,19 +1,16 @@
 """
 Django settings for Celestial Shopping backend
 """
-
 from pathlib import Path
 from datetime import timedelta
-from decouple import config
+from decouple import config, Csv
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY
 SECRET_KEY = config("SECRET_KEY", default="CHANGE_ME_IN_PRODUCTION")
-
 DEBUG = config("DEBUG", default=False, cast=bool)
-
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*", cast=lambda v: v.split(","))
 
 # APPS
@@ -25,13 +22,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "whitenoise.runserver_nostatic", 
-
     # Third Party
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
     "django_filters",
-
     # Local
     "users",
     "store",
@@ -39,10 +34,10 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",  # Must be first
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    'whitenoise.middleware.WhiteNoiseMiddleware', 
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -71,9 +66,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # DATABASE CONFIGURATION
-
 DATABASE_URL = config("DATABASE_URL", default=None)
-
 if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
@@ -109,7 +102,6 @@ USE_TZ = True
 # STATIC & MEDIA
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -134,12 +126,57 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-# CORS (Frontend domains allowed)
-CORS_ALLOWED_ORIGINS = [
-    "https://celestial-shopping.vercel.app",
-    "http://localhost:3000",
-]
+# CORS CONFIGURATION
+CORS_ALLOWED_ORIGINS = config(
+    "CORS_ALLOWED_ORIGINS",
+    default="https://celestial-shopping.vercel.app,http://localhost:3000,http://localhost:5173",
+    cast=Csv()
+)
 
 CORS_ALLOW_CREDENTIALS = True
 
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
+# CSRF CONFIGURATION
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="https://celestial-shopping.vercel.app,https://celestial-shopping.onrender.com",
+    cast=Csv()
+)
+
+# Cookie settings for cross-origin requests
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
+```
+
+## Key changes made:
+
+1. ✅ **Fixed middleware order** - WhiteNoise is now properly positioned
+2. ✅ **Added CORS headers configuration** for JWT tokens
+3. ✅ **Added CSRF_TRUSTED_ORIGINS** for both frontend and backend domains
+4. ✅ **Added secure cookie settings** for cross-origin authentication
+5. ✅ **Made CORS origins configurable** via environment variables
+6. ✅ **Security settings** adapt based on DEBUG mode
+
+## Environment Variables for Render:
+
+Add these in your Render dashboard under **Environment**:
+```
+SECRET_KEY=your-secret-key-here
+DEBUG=False
+ALLOWED_HOSTS=celestial-shopping.onrender.com
+CORS_ALLOWED_ORIGINS=https://celestial-shopping.vercel.app
+CSRF_TRUSTED_ORIGINS=https://celestial-shopping.vercel.app,https://celestial-shopping.onrender.com
+DATABASE_URL=(automatically set by Render if using their PostgreSQL)
