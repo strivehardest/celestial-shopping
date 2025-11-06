@@ -23,5 +23,3 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'Superuser created: {email}'))
         else:
             self.stdout.write(self.style.WARNING(f'Superuser already exists: {email}'))
-```
-
