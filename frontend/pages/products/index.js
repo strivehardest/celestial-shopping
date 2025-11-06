@@ -10,8 +10,8 @@ import EmptyState from '@/components/EmptyState';
 import Breadcrumb from '@/components/Breadcrumb';
 import { ShoppingBag } from 'lucide-react';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/store/products/';
-const CATEGORY_URL = process.env.NEXT_PUBLIC_API_URL_CATEGORIES || 'http://127.0.0.1:8000/api/store/categories/';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://celestial-shopping.onrender.com/api/store/products/';
+const CATEGORY_URL = process.env.NEXT_PUBLIC_API_URL_CATEGORIES || 'https://celestial-shopping.onrender.com/api/store/categories/';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
@@ -215,3 +215,4 @@ export default function ProductsPage() {
     </Layout>
   );
 }
+
