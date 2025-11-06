@@ -23,8 +23,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "whitenoise.runserver_nostatic", 
     # Third Party
-    "cloudinary_storage",  # Add this BEFORE cloudinary
-    "cloudinary"
+    "cloudinary_storage",
+    "cloudinary",  # Added comma here!
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
@@ -34,7 +34,6 @@ INSTALLED_APPS = [
     "store",
     "orders",
 ]
-
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -174,3 +173,4 @@ CLOUDINARY_STORAGE = {
 
 # Update media file storage
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
