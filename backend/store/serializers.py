@@ -11,7 +11,7 @@ class CategorySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Category
-        fields = ['id', 'name', 'slug', 'description', 'product_count']
+        fields = ['id', 'name', 'price', 'image', 'category', 'slug', 'description', 'product_count']
     
     def get_product_count(self, obj):
         return obj.products.filter(available=True).count()
@@ -62,4 +62,5 @@ class ProductCreateUpdateSerializer(serializers.ModelSerializer):
     """Serializer for creating/updating products (admin)"""
     class Meta:
         model = Product
+
         fields = '__all__'
